@@ -1,0 +1,51 @@
+/* styles.css */
+
+body {
+    background: linear-gradient(135deg, #f0f4fd, #d9e4ff);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 800px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+button {
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+button#add-step {
+    background-color: #3498db;
+    color: white;
+}
+
+button#add-step:hover {
+    background-color: #2980b9;
+}
+
+button.remove-step {
+    margin-top: 10px;
+}
+
+fieldset {
+    border: 1px solid #ddd;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
