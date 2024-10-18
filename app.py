@@ -41,7 +41,12 @@ def topological_sort_with_times(steps):
                 next_start_time = max(end_times[dep] for dep in steps_dict[neighbor].dependencies)
                 queue.append((neighbor, next_start_time))
 
-    return start_times, max(end_times.values())
+    # Adjust start times to properly reflect the minimum possible time (i.e., no negative or default zero values)
+    for step in steps:
+        if step.name not in start_times:
+            start_times[step.name] = 0
+
+    return start_times, max(end_times.values()) if end_times else 0
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -63,8 +68,7 @@ def index():
                     return f"Error: Step {i + 1} has an invalid duration value.", 400
 
                 cpu_bound = request.form.get(f"cpu_bound_{i + 1}") == "yes"
-                dependencies = request.form.get(f"dependencies_{i + 1}", "").split(";")
-                dependencies = [dep.strip() for dep in dependencies if dep.strip()]
+                dependencies = request.form.getlist(f"dependencies_{i + 1}")
 
                 steps.append(RecipeStep(name, int(duration), cpu_bound, dependencies))
 
