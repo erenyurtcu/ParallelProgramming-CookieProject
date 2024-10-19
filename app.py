@@ -56,6 +56,9 @@ def index():
             # Calculate the total number of steps based on fieldsets
             step_count = len([key for key in request.form.keys() if key.startswith("name_")])
 
+            if step_count == 0:
+                return "Error: No steps provided.", 400
+
             # Iterate over each step submitted in the form
             for i in range(step_count):
                 name = request.form.get(f"name_{i + 1}", "").strip()
@@ -67,11 +70,23 @@ def index():
                 if not duration.isdigit():
                     return f"Error: Step {i + 1} has an invalid duration value.", 400
 
-                cpu_bound = request.form.get(f"cpu_bound_{i + 1}") == "yes"
+                cpu_bound = request.form.get(f"cpu_bound_{i + 1}")
+                if cpu_bound not in ["yes", "no"]:
+                    return f"Error: Step {i + 1} is missing CPU-bound information.", 400
+
                 dependencies = request.form.getlist(f"dependencies_{i + 1}")
 
-                steps.append(RecipeStep(name, int(duration), cpu_bound, dependencies))
+                # Collect steps
+                steps.append(RecipeStep(name, int(duration), cpu_bound == "yes", dependencies))
 
+            # Check for invalid dependencies
+            step_names = {step.name for step in steps}
+            for step in steps:
+                for dep in step.dependencies:
+                    if dep not in step_names:
+                        return f"Error: Dependency '{dep}' does not exist.", 400
+
+            # Generate start times and total duration
             start_times, total_duration = topological_sort_with_times(steps)
             return render_template("schedule.html", start_times=start_times, total_duration=total_duration)
 
@@ -79,6 +94,7 @@ def index():
             return f"An unexpected error occurred: {str(e)}", 500
 
     return render_template("index.html")
+
 
 
 if __name__ == "__main__":
