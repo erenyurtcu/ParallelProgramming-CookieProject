@@ -2,34 +2,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const stepsContainer = document.getElementById("steps-container");
     const addStepButton = document.getElementById("add-step");
 
-    // Function to re-number all steps and manage dependency button states
     function renumberSteps() {
         const fieldsets = stepsContainer.querySelectorAll(".step-fieldset");
         fieldsets.forEach((fieldset, index) => {
             const legend = fieldset.querySelector("legend");
             legend.textContent = `Step ${index + 1}`;
             const addDependencyButton = fieldset.querySelector(".add-dependency");
-            if (fieldsets.length > 1) {
-                addDependencyButton.disabled = false;
-            } else {
-                addDependencyButton.disabled = true;
-            }
+            addDependencyButton.disabled = fieldsets.length <= 1;
         });
 
-        // Allow removal only if more than one step
         fieldsets.forEach((fieldset) => {
             const removeButton = fieldset.querySelector(".remove-step");
-            if (fieldsets.length > 1) {
-                removeButton.disabled = false;
-            } else {
-                removeButton.disabled = true;
-            }
+            removeButton.disabled = fieldsets.length <= 1;
         });
     }
 
-    // Function to create a new step
     function createStep() {
-        const stepId = stepsContainer.children.length + 1; // New step number based on current length
+        const stepId = stepsContainer.children.length + 1;
         const fieldset = document.createElement("fieldset");
         fieldset.classList.add("step-fieldset");
 
@@ -47,11 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
 
             <div class="mb-3">
-                <label class="form-label">CPU-bound</label><br>
-                <input type="radio" id="cpu_bound_${stepId}_yes" name="cpu_bound_${stepId}" value="yes" required>
-                <label for="cpu_bound_${stepId}_yes">Yes</label>
-                <input type="radio" id="cpu_bound_${stepId}_no" name="cpu_bound_${stepId}" value="no" required>
-                <label for="cpu_bound_${stepId}_no">No</label>
+                <label class="form-label">Chef's Attention</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="cpu_bound_${stepId}" name="cpu_bound_${stepId}" value="yes">
+                    <label class="form-check-label" for="cpu_bound_${stepId}">Not Required</label>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -64,26 +53,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
         stepsContainer.appendChild(fieldset);
 
-        // Add event listener to the remove button
+        const cpuBoundSwitch = fieldset.querySelector(`#cpu_bound_${stepId}`);
+        const label = fieldset.querySelector(`label[for="cpu_bound_${stepId}"]`);
+
+        // Switch durumuna göre label metnini günceller
+        cpuBoundSwitch.addEventListener("change", () => {
+            label.textContent = cpuBoundSwitch.checked ? "Required" : "Not Required";
+        });
+
         fieldset.querySelector(".remove-step").addEventListener("click", () => {
             stepsContainer.removeChild(fieldset);
-            renumberSteps(); // Renumber remaining steps after removal
+            renumberSteps();
             updateDependencyOptions();
         });
 
-        // Add event listener to the add dependency button
         fieldset.querySelector(".add-dependency").addEventListener("click", () => {
             addDependencyOptions(fieldset);
         });
 
-        // Add event listener to update dependencies when step name changes
         const nameInput = fieldset.querySelector(`[id^="name_"]`);
         nameInput.addEventListener("input", updateDependencyOptions);
 
-        renumberSteps(); // Renumber all steps after adding a new one
+        renumberSteps();
     }
 
-    // Function to add dependency options to a step
     function addDependencyOptions(fieldset) {
         const dependenciesContainer = fieldset.querySelector(".dependencies-container");
         const stepId = Array.from(stepsContainer.children).indexOf(fieldset) + 1;
@@ -92,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (dependenciesContainer.querySelectorAll("select").length >= maxDependencies) {
             alert("All possible dependencies have been selected.");
-            return; // Maximum number of dependencies reached
+            return;
         }
 
         const dependencyDiv = document.createElement("div");
@@ -103,14 +96,12 @@ document.addEventListener("DOMContentLoaded", function () {
         select.required = true;
         select.name = `dependencies_${stepId}`;
 
-        // Create a default option
         const defaultOption = document.createElement("option");
         defaultOption.textContent = "Select a step";
         defaultOption.disabled = true;
         defaultOption.selected = true;
         select.appendChild(defaultOption);
 
-        // Add other steps as options, filtering out already selected dependencies
         const selectedValues = Array.from(dependenciesContainer.querySelectorAll("select")).map(s => s.value);
         availableSteps.forEach((availableStep) => {
             const stepNameInput = availableStep.querySelector(`[id^="name_"]`).value;
@@ -122,10 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Append select to dependency div
         dependencyDiv.appendChild(select);
 
-        // Add remove button for dependency
         const removeDependencyButton = document.createElement("button");
         removeDependencyButton.type = "button";
         removeDependencyButton.classList.add("btn", "btn-danger", "btn-sm");
@@ -135,19 +124,13 @@ document.addEventListener("DOMContentLoaded", function () {
             updateDependencyOptions();
         });
 
-        // Append remove button to dependency div
         dependencyDiv.appendChild(removeDependencyButton);
-
-        // Append dependency div to dependencies container
         dependenciesContainer.appendChild(dependencyDiv);
 
         updateDependencyOptions();
-
-        // Add event listener to remove selected options from future selections
         select.addEventListener("change", updateDependencyOptions);
     }
 
-    // Function to update dependency options across all selects dynamically
     function updateDependencyOptions() {
         const allDependencies = Array.from(stepsContainer.querySelectorAll(".dependencies-container select"));
         const selectedValues = allDependencies.map(s => s.value);
@@ -159,17 +142,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const stepId = Array.from(stepsContainer.children).indexOf(fieldset) + 1;
             const availableSteps = allSteps.filter((_, index) => index + 1 !== stepId);
 
-            // Clear existing options except for the default
             select.innerHTML = "";
 
-            // Create a default option
             const defaultOption = document.createElement("option");
             defaultOption.textContent = "Select a step";
             defaultOption.disabled = true;
             defaultOption.selected = true;
             select.appendChild(defaultOption);
 
-            // Add updated steps as options
             availableSteps.forEach((availableStep) => {
                 const stepNameInput = availableStep.querySelector(`[id^="name_"]`).value;
                 const option = document.createElement("option");
@@ -183,9 +163,22 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Event listener for the "+ Add Step" button
-    addStepButton.addEventListener("click", createStep);
+    // Form submit edilirken CPU-bound işaretli değilse "no" gönder
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function () {
+        const steps = stepsContainer.querySelectorAll(".step-fieldset");
+        steps.forEach((step, index) => {
+            const cpuBoundInput = step.querySelector(`#cpu_bound_${index + 1}`);
+            if (!cpuBoundInput.checked) {
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = `cpu_bound_${index + 1}`;
+                hiddenInput.value = "no";
+                form.appendChild(hiddenInput);
+            }
+        });
+    });
 
-    // Create the first step on page load
+    addStepButton.addEventListener("click", createStep);
     createStep();
 });
