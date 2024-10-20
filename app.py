@@ -144,7 +144,7 @@ def index():
             start_times, total_duration = sort_with_times(steps)
 
             # Render the schedule template with the calculated data.
-            return render_template("schedule.html", start_times=start_times, total_duration=total_duration)
+            return render_template("schedule.html", start_times = start_times, total_duration = total_duration)
 
         except Exception as e:  # Handle any unexpected errors.
             return f"An unexpected error occurred: {str(e)}", 500
