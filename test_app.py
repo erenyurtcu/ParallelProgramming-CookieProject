@@ -11,15 +11,17 @@ def test_index_page(client):
     """
     Test if the index page loads successfully.
     """
-    response = client.get('/')
-    assert response.status_code == 200
-    assert b'Recipe Planner' in response.data
+    try:
+        response = client.get('/')
+        assert response.status_code == 200
+        assert b'Recipe Planner' in response.data
+    except Exception as e:
+        pytest.fail(f"Index page test failed: {e}")
 
 def test_valid_form_submission(client):
     """
     Test if the form submission works properly with valid data.
     """
-    # Prepare form data with multiple steps for testing purposes
     form_data = {
         'name_1': 'Step 1',
         'duration_1': '10',
@@ -29,14 +31,15 @@ def test_valid_form_submission(client):
         'cpu_bound_2': 'no',
         'dependencies_2': 'Step 1',
     }
-    response = client.post('/', data=form_data)
-
-    # Test if the response is valid and renders the schedule page
-    assert response.status_code == 200
-    assert b'Recipe Schedule' in response.data
-    assert b'Step 1' in response.data
-    assert b'Step 2' in response.data
-    assert b'Total Duration:' in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 200
+        assert b'Recipe Schedule' in response.data
+        assert b'Step 1' in response.data
+        assert b'Step 2' in response.data
+        assert b'Total Duration:' in response.data
+    except Exception as e:
+        pytest.fail(f"Valid form submission test failed: {e}")
 
 def test_missing_name(client):
     """
@@ -47,10 +50,12 @@ def test_missing_name(client):
         'duration_1': '10',
         'cpu_bound_1': 'yes'
     }
-    response = client.post('/', data=form_data)
-
-    assert response.status_code == 400
-    assert b'Error: Step 1 is missing a valid name.' in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 400
+        assert b'Error: Step 1 is missing a valid name.' in response.data
+    except Exception as e:
+        pytest.fail(f"Missing name test failed: {e}")
 
 def test_invalid_duration(client):
     """
@@ -61,20 +66,23 @@ def test_invalid_duration(client):
         'duration_1': 'invalid_duration',  # Invalid duration
         'cpu_bound_1': 'yes'
     }
-    response = client.post('/', data=form_data)
-
-    assert response.status_code == 400
-    assert b'Error: Step 1 has an invalid duration value.' in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 400
+        assert b'Error: Step 1 has an invalid duration value.' in response.data
+    except Exception as e:
+        pytest.fail(f"Invalid duration test failed: {e}")
 
 def test_empty_form_submission(client):
     """
     Test if submitting an empty form returns an error.
     """
     form_data = {}
-    response = client.post('/', data=form_data)
-
-    # Should ideally return an error since no steps are provided
-    assert response.status_code == 400 or b'Error: No steps provided' in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 400 or b'Error: No steps provided' in response.data
+    except Exception as e:
+        pytest.fail(f"Empty form submission test failed: {e}")
 
 def test_invalid_dependency(client):
     """
@@ -89,9 +97,11 @@ def test_invalid_dependency(client):
         'cpu_bound_2': 'no',
         'dependencies_2': 'NonExistentStep'  # Invalid dependency
     }
-    response = client.post('/', data=form_data)
-
-    assert response.status_code == 400 or b"Error: Dependency 'NonExistentStep' does not exist." in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 400 or b"Error: Dependency 'NonExistentStep' does not exist." in response.data
+    except Exception as e:
+        pytest.fail(f"Invalid dependency test failed: {e}")
 
 def test_no_cpu_bound_selection(client):
     """
@@ -101,6 +111,8 @@ def test_no_cpu_bound_selection(client):
         'name_1': 'Step 1',
         'duration_1': '10'
     }
-    response = client.post('/', data=form_data)
-
-    assert response.status_code == 400 or b'Error: Step 1 is missing CPU-bound information.' in response.data
+    try:
+        response = client.post('/', data=form_data)
+        assert response.status_code == 400 or b'Error: Step 1 is missing CPU-bound information.' in response.data
+    except Exception as e:
+        pytest.fail(f"No CPU-bound selection test failed: {e}")
